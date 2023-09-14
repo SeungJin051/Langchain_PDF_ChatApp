@@ -1,3 +1,4 @@
 .env
 /pdfs
 /pages/ai-tory-firebase-key.json
+__pycache__/
