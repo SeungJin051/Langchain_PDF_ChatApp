@@ -141,7 +141,8 @@ if pdf is not None:
             llm = OpenAI(
                 temperature=0,
                 model_name="gpt-3.5-turbo-16k",
-                top_p=1
+                top_p=1,
+                max_tokens=1000
             )
             chain = load_qa_chain(llm=llm, chain_type="stuff")
             response = chain.run(input_documents=docs, question=user_question)
