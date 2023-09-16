@@ -23,7 +23,6 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import FAISS
 from langchain.llms import OpenAI
 from langchain.chains.question_answering import load_qa_chain # 답변
-
 import side_bar
 from components import tory_firebase
 
@@ -122,7 +121,7 @@ if pdf is not None:
                 temperature=0.1,
                 model_name="gpt-3.5-turbo-16k",
                 top_p=1,
-                max_tokens=1000
+                max_tokens=1000,
             )
 
             chain = load_qa_chain(llm=llm, chain_type="stuff")
