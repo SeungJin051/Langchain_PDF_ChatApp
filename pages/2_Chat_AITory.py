@@ -34,14 +34,14 @@ side_bar.run_side_bar()
 
 # 스트림릿 앱 헤더 설정
 st.header("AI Tory와 대화하기! 💬")
-
+st.caption('AI Tory에게 PDF를 학습시키고, 함께 이야기하며 혁신적인 아이디어를 공유해보세요! 💡')
 # PDF 파일 업로드 및 사용자 질문 입력
-pdf = st.file_uploader("AI Tory에게 학습할 동화 PDF를 Upload 해주세요", type='pdf', key='pdf')
+pdf = st.file_uploader(label=' ', type='pdf', key='pdf', help='AI Tory에게 학습할 동화 PDF를 Upload 해주세요') 
 
 if pdf is not None:
     query = st.text_input("AI토리에게 질문하세요!")
 
-    AIttsButton = st.button("🔊")
+    AIttsButton = st.button("음성 듣기 🔊")
     pdf_reader = PdfReader(pdf)
     text = ""
 
@@ -72,11 +72,11 @@ if pdf is not None:
         print("해당 PDF는 저장소에 없습니다!")
 
     # 세션 상태 변수 초기화
-    if 'generated' not in st.session_state:
-        st.session_state['generated'] = []
+    if 'chat_generated' not in st.session_state:
+        st.session_state['chat_generated'] = []
 
-    if 'past' not in st.session_state:
-        st.session_state['past'] = []
+    if 'chat_past' not in st.session_state:
+        st.session_state['chat_past'] = []
 
     if query:
         # 유사한 문서 검색을 통해 적절한 문서 가져오기
@@ -124,22 +124,24 @@ if pdf is not None:
                 max_tokens=1000,
             )
 
-            chain = load_qa_chain(llm=llm, chain_type="stuff")
+            # stuff
+            # refine = 각 데이터 청크에 대해 초기 프롬프트를 실행하는 것
+            chain = load_qa_chain(llm=llm, chain_type="refine") 
             response = chain.run(input_documents=docs, question=user_question)
 
             bot_message = response
             output = bot_message
 
 
-            st.session_state.past.append(query)
-            st.session_state.generated.append(output)
+            st.session_state.chat_past.append(query)
+            st.session_state.chat_generated.append(output)
 
         # 대화 기록 및 음성 출력
         with st.spinner("토리가 말하고있어요..."):
-            if st.session_state['generated']:
-                for i in range(len(st.session_state['generated']) - 1, -1, -1):
-                    message(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
-                    message(st.session_state["generated"][i], key=str(i))
+            if st.session_state['chat_generated']:
+                for i in range(len(st.session_state['chat_generated']) - 1, -1, -1):
+                    message(st.session_state['chat_past'][i], is_user=True, key=str(i) + '_user', avatar_style="thumbs", seed="Aneka")
+                    message(st.session_state["chat_generated"][i], key=str(i), avatar_style="thumbs", seed="Felix")
 
                 if AIttsButton:
                     tts = gTTS(text=output, lang='ko')
@@ -147,4 +149,4 @@ if pdf is not None:
                     tts.save(temp_file.name)
                     playsound.playsound(temp_file.name)
                     temp_file.close()
-        tory_firebase.add_firebase(query, bot_message)
+        tory_firebase.add_firebase_chat(query, bot_message)
