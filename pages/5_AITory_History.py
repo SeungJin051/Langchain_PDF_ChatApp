@@ -43,28 +43,28 @@ chat_df = pd.DataFrame(chat_df_data)
 role_df = pd.DataFrame(role_df_data)
 
 # 스타일 및 레이아웃 조절
-st.markdown("""
-<style>
-    table {
-        border-collapse: collapse;
-        width: 100%;
-    }
+# st.markdown("""
+# <style>
+#     table {
+#         border-collapse: collapse;
+#         width: 100%;
+#     }
 
-    th, td {
-        text-align: left;
-        padding: 20px;
-    }
+#     th, td {
+#         text-align: left;
+#         padding: 20px;
+#     }
 
-    tr:nth-child(even) {
-        background-color: #212529;
-    }
+#     tr:nth-child(even) {
+#         background-color: #212529;
+#     }
 
-    th {
-        background-color: #2C3034;
-        color: white;
-    }
-</style>
-""", unsafe_allow_html=True)
+#     th {
+#         background-color: #2C3034;
+#         color: white;
+#     }
+# </style>
+# """, unsafe_allow_html=True)
 
 # ChatHistory 데이터를 출력
 with st.expander('ChatHistory 데이터', expanded=True):
