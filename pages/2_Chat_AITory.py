@@ -1,10 +1,14 @@
 import os
-#  streamlit = Python에서 GUI 생성
-import streamlit as st
+import streamlit as st #  streamlit = Python에서 GUI 생성
 import pickle # 파이썬 객체를 바이너리 파일로 저장하고 불러오는 기능
 import playsound
+import openai
+import side_bar
 
+from PyPDF2 import PdfReader # PyPDF2 = streamlit의 PDF 업로드를 읽기 위해 
 from tempfile import NamedTemporaryFile
+
+from components import tory_firebase
 
 from gtts import gTTS
 from dotenv import load_dotenv # OPEN_API_KEY
@@ -12,22 +16,17 @@ from dotenv import load_dotenv # OPEN_API_KEY
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_chat import message
 
-# PyPDF2 = streamlit의 PDF 업로드를 읽기 위해 
-from PyPDF2 import PdfReader
-
-# langchain.text_splitter = PyPDF2의 텍스트를 chunks로 나눔
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-# openAI의 embedding = 계산하고 반환
-from langchain.embeddings.openai import OpenAIEmbeddings
-# VectorStore = FAISS, Chroma X = VectorStore에서 duckdb.DuckDBPyConnection 접근 불가능
-from langchain.vectorstores import FAISS
 from langchain.llms import OpenAI
 from langchain.chains.question_answering import load_qa_chain # 답변
-import side_bar
-from components import tory_firebase
+from langchain.text_splitter import RecursiveCharacterTextSplitter # langchain.text_splitter = PyPDF2의 텍스트를 chunks로 나눔
+from langchain.embeddings.openai import OpenAIEmbeddings # openAI의 embedding = 계산하고 반환
+from langchain.vectorstores import FAISS # VectorStore = FAISS, Chroma X = VectorStore에서 duckdb.DuckDBPyConnection 접근 불가능
+
+# -------
 
 # .env 파일로부터 환경 변수 로드
 load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # 사이드 바 생성
 side_bar.run_side_bar()
@@ -131,7 +130,6 @@ if pdf is not None:
 
             bot_message = response
             output = bot_message
-
 
             st.session_state.chat_past.append(query)
             st.session_state.chat_generated.append(output)
