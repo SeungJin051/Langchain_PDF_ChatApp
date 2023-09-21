@@ -35,31 +35,25 @@ if DrawButton:
     else:
         conversation = ""
         for i in range(len(st.session_state['role_generated']) - 1, -1, -1):
-            conversation += f"{st.session_state['role_generated'][i]}\n\n"
-        st.write(conversation)
+            conversation += f"{st.session_state['role_generated'][i]}"
+        print(conversation)
         user_input = conversation
 
 
         gpt_prompt = [{
             "role" : "system", 
-            "content" :  f"""
-                            Understand Korean by translating it into English
-                            Find a person in {user_input}
-                            Write explanatory, focusing on nouns and visually descriptive phrases.
-                            Use terms from relevant fields such as art techniques, art media, and artist names to describe styles.
-                            When describing a genre, use short sections separated by commas and suggest a genre by combining compatible artists and styles.
-                            Example:
-                            Expanding ideas
-                            Original prompt: Fairy Tale creating a cute anthropomorphic fox character dressed in colorful costumes and holding balloons
-                            Be the main character.
-                        
+            "content" : f"""
+                            Find an one person in {user_input} and Summarize about him
                          """
         }]
                             # Summarize in one line.
         
         gpt_prompt.append({
             "role" : "user",
-            "content" : user_input
+            "content" : """ 
+                            a cute description that children would like
+                            Answer in English and Summarize the prompt and make it more concise, no more than 250 characters 
+                        """
         })
 
         with st.spinner("토리가 어떤 그림을 그릴지 생각하고 있어요.."):
@@ -72,12 +66,10 @@ if DrawButton:
 
         dalle_prompt = gpt_response
 
-        st.write("dalle_prompt = " + prompt)
-
         with st.spinner("토리가 열심히 그림을 그리고 있어요.."):
             dallE_response = openai.Image.create(
                 prompt=prompt,
-                size="1024x1024",
             )
 
-        st.image(dallE_response["data"][0]["url"], caption=dalle_prompt)
+        st.image(dallE_response["data"][0]["url"])
+        st.caption(prompt)

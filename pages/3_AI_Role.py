@@ -107,12 +107,17 @@ if pdf is not None:
 
                 # AI Tory에게 전달할 질문 작성
                 prompt = f"""
-                {store_name} = 학습된 동화의 제목
-                {text} = 학습된 동화의 내용
-                나 = {user}
-                너 = {ai} 
+                {user} = 상대방
+                {ai} = 나
                 {query} = 사용자의 질문  
 
+                ----------------------------------------------------------------
+
+                [예시문장]
+                - 저는 백설공주입니다.
+                - 당신은 왕자입니다.
+                - 그것에 대한 정보는 모르겠습니다.
+                
                 ----------------------------------------------------------------
                 [규칙]
                 - {user}의 {query}와 {ai}의 관계를 이해하고 적절한 답변을 해라.
@@ -120,7 +125,7 @@ if pdf is not None:
                 - {user}가 지정한 {ai}에 대한 질문이 아닌 경우 모른다고 대답해.
                 - 당신은 사용자가 지정한 역할인 {ai}인 것 처럼 대답하고 행동하여야 합니다.
                 ----------------------------------------------------------------
-                위 정보는 모두 {ai}에 대한 내용입니다. [예시 문장]은 {text}를 기반으로 역할놀이에 대답한 내용입니다.
+                위 정보는 모두 {ai}에 대한 내용입니다. [예시 문장]을 참고해서 답변해, 역할놀이에 대답한 내용입니다.
                 [규칙]을 따르는 {ai}입니다. {user}에게 {ai}만의 답변을 하세요.
                 ----------------------------------------------------------------
                 """
@@ -134,7 +139,7 @@ if pdf is not None:
                         model_name="gpt-3.5-turbo-16k",
                         top_p=1,
                     )
-                    chain = load_qa_chain(llm=llm, chain_type="stuff")
+                    chain = load_qa_chain(llm=llm, chain_type="refine")
                     response = chain.run(input_documents=docs, question=user_question)
 
                     bot_message = response
@@ -147,8 +152,8 @@ if pdf is not None:
                 with st.spinner("토리가 말하고있어요..."):
                     if st.session_state['role_generated']:
                         for i in range(len(st.session_state['role_generated']) - 1, -1, -1):
-                            message(st.session_state['role_past'][i], is_user=True, key=str(i) + '_user', avatar_style="thumbs", seed="Aneka")
                             message(st.session_state["role_generated"][i], key=str(i), avatar_style="thumbs", seed="Felix")
+                            message(st.session_state['role_past'][i], is_user=True, key=str(i) + '_user', avatar_style="thumbs", seed="Aneka")
 
                 if AIttsButton:
                     tts = gTTS(text=output, lang='ko')

@@ -31,18 +31,20 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 # 사이드 바 생성
 side_bar.run_side_bar()
 
+
 # 스트림릿 앱 헤더 설정
 st.header("AI Tory와 대화하기! 💬")
 st.caption('AI Tory에게 PDF를 학습시키고, 함께 이야기하며 혁신적인 아이디어를 공유해보세요! 💡')
+pdf_expander = st.expander('AI Tory에게 학습할 동화 PDF를 Upload 해주세요', expanded=True)
+
 # PDF 파일 업로드 및 사용자 질문 입력
-pdf = st.file_uploader(label=' ', type='pdf', key='pdf', help='AI Tory에게 학습할 동화 PDF를 Upload 해주세요') 
+pdf = st.file_uploader(label=' ', type='pdf', key='pdf')
 
+# PDF가 업로드되었다면 PDF 처리를 합니다
 if pdf is not None:
-    query = st.text_input("AI토리에게 질문하세요!")
-
-    AIttsButton = st.button("🔊")
     pdf_reader = PdfReader(pdf)
     text = ""
+
 
     # 업로드한 PDF에서 텍스트 추출
     for page in pdf_reader.pages:
@@ -70,6 +72,8 @@ if pdf is not None:
             pickle.dump(VectorStore, f)
         print("해당 PDF는 저장소에 없습니다!")
 
+    st.session_state.pdf_processed = True  # PDF 처리가 완료되었음을 표시
+
     # 세션 상태 변수 초기화
     if 'chat_generated' not in st.session_state:
         st.session_state['chat_generated'] = []
@@ -77,9 +81,50 @@ if pdf is not None:
     if 'chat_past' not in st.session_state:
         st.session_state['chat_past'] = []
 
+
+
+    # PDF가 업로드되었다면 사용자 쿼리 처리를 합니다
+
+    gpt_prompt = [{
+            "role" : "system", 
+            "content" : f"You are a great painter in the van Gogh style that children like. Summarize the contents so that you can make the cover of the book. It's cute and draws children to like."
+    }]
+    gpt_prompt.append({
+            "role" : "user",
+            "content" :f"{pdf.name} {text}"
+    })
+
+    AIdalleButton = st.button("🎨")
+    if AIdalleButton:
+        with st.spinner("토리가 동화의 표지를 상상하고 있어요.."):
+                gpt_response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo-16k",
+                    messages=gpt_prompt,
+                    max_tokens=50
+                )
+
+        pic_prompt = gpt_response["choices"][0]["message"]["content"]
+        dalle_prompt = pic_prompt
+
+        with st.spinner("토리가 동화의 표지를 그려줄게요.."):
+            dallE_response = openai.Image.create(
+                prompt=dalle_prompt,
+                size= "1024x1024",
+                n=1
+            )
+        col1, col2, col3 = st.columns(3)
+        with col2:
+            st.image(dallE_response["data"][0]["url"], caption=pdf.name)
+            st.empty()
+            st.empty()
+    
+    query = st.text_input("AI토리에게 질문하세요!")
+    AIttsButton = st.button("🔊")
+
     if query:
         # 유사한 문서 검색을 통해 적절한 문서 가져오기
         docs = VectorStore.similarity_search(query=query, k=3)
+
 
         # AI Tory에게 전달할 질문 작성
         prompt = f"""
@@ -123,8 +168,6 @@ if pdf is not None:
                 max_tokens=1000,
             )
 
-            # stuff
-            # refine = 각 데이터 청크에 대해 초기 프롬프트를 실행하는 것
             chain = load_qa_chain(llm=llm, chain_type="stuff") 
             response = chain.run(input_documents=docs, question=user_question)
 
