@@ -9,6 +9,5 @@ streamlit-extras
 streamlit-chat
 gTTS
 google-cloud-firestore
-
 # update st
 # 터미널 = pip install -r requirements.txt
