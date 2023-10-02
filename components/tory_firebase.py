@@ -37,20 +37,3 @@ def add_firebase_role(query, output):
         "role_ai_question": output,
         "role_create_time": formatted_datetime
     })
-
-# db = firestore.Client.from_service_account_json("pages/ai-tory-firebase-key.json")
-
-# # expander를 사용하여 내용을 펼칩니다.
-# with st.expander("저장된 데이터"):
-#     # Firestore의 "History" 컬렉션에 있는 모든 문서를 가져옵니다.
-#     docs = db.collection("History").stream()
-
-#     # 각 문서의 내용을 표시합니다.
-#     for doc in docs:
-#         data = doc.to_dict()
-#         st.write("문서 ID:", doc.id)
-#         st.write("사용자 질문:", data["user"])
-#         st.write("AI 대답:", data["ai"])
-#         st.write("시간:", data["time"])
-
-# side_bar.run_side_bar()
