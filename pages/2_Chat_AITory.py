@@ -3,7 +3,10 @@ import streamlit as st #  streamlit = Python에서 GUI 생성
 import pickle # 파이썬 객체를 바이너리 파일로 저장하고 불러오는 기능
 import playsound
 import openai
-import side_bar
+import pyaudio
+import wave
+
+from side_bar import run_side_bar
 
 from PyPDF2 import PdfReader # PyPDF2 = streamlit의 PDF 업로드를 읽기 위해 
 from tempfile import NamedTemporaryFile
@@ -21,61 +24,81 @@ from langchain.chains.question_answering import load_qa_chain # 답변
 from langchain.text_splitter import RecursiveCharacterTextSplitter # langchain.text_splitter = PyPDF2의 텍스트를 chunks로 나눔
 from langchain.embeddings.openai import OpenAIEmbeddings # openAI의 embedding = 계산하고 반환
 from langchain.vectorstores import FAISS # VectorStore = FAISS, Chroma X = VectorStore에서 duckdb.DuckDBPyConnection 접근 불가능
-
 # -------
 
 # .env 파일로부터 환경 변수 로드
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
-
+thumb_style_image_path = "pages/images/thumb_style.png" 
+pdf_image_path = "pages/images/download-pdf.gif" 
 # 사이드 바 생성
-side_bar.run_side_bar()
+pdf, text, VectorStore = run_side_bar()
+sample_rate = 44100  # 오디오 샘플 속도
+duration = 6  # 녹음 시간 (초)
 
-# 스트림릿 앱 헤더 설정
-st.header("AI Tory와 대화하기! 💬")
-st.caption('AI Tory에게 PDF를 학습시키고, 함께 이야기하며 혁신적인 아이디어를 공유해보세요! 💡')
-# PDF 파일 업로드 및 사용자 질문 입력
-pdf = st.file_uploader(label=' ', type='pdf', key='pdf', help='AI Tory에게 학습할 동화 PDF를 Upload 해주세요') 
+if pdf is None:
+    # 스트림릿 앱 헤더 설정
+    st.header("AI Tory와 대화하기! 💬")
+    st.caption('AI Tory에게 PDF를 학습시키고, 함께 이야기하며 혁신적인 아이디어를 공유해보세요! 💡')
+    st.info("PDF를 업로드 해주세요...")
+    st.image(pdf_image_path)
 
 if pdf is not None:
-    query = st.text_input("AI토리에게 질문하세요!")
+    st.header(f"AITory와 {pdf.name} 💬")
+    st.caption('AI Tory에게 PDF를 학습시키고, 함께 이야기하며 혁신적인 아이디어를 공유해보세요! 💡')
+        
+# 세션 상태 변수 초기화
+if 'chat_generated' not in st.session_state:
+    st.session_state['chat_generated'] = []
 
-    AIttsButton = st.button("🔊")
-    pdf_reader = PdfReader(pdf)
-    text = ""
+if 'chat_past' not in st.session_state:
+    st.session_state['chat_past'] = []
 
-    # 업로드한 PDF에서 텍스트 추출
-    for page in pdf_reader.pages:
-        text += page.extract_text()
+col1, col2, col3 = st.columns(3)
 
-    # 텍스트를 적절한 크기의 청크로 나누기
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=200,
-        length_function=len
-    )
-    chunks = text_splitter.split_text(text=text)
+if pdf is not None:
+    query = st.text_input("AI토리에게 질문하세요!", placeholder="Send a message")
+    whisper_button = st.button("🎙️", help="마이크를 연결해주세요.")
+    tts_button = st.button("🔊", help="음성으로 듣고싶은 질문을 입력해주세요.")
+    toggle_state = st.checkbox('AI 그림', value=True, help="AI토리가 그림을 그려줄게요.")
 
-    # PDF 파일 이름으로 저장소 생성 또는 로드
-    store_name = pdf.name[:-4]
+    if whisper_button:
+        with st.spinner("말해주세요! 토리가 듣고있어요..."):
+            # PyAudio를 사용하여 오디오 스트림 열기
+            audio_data = []
+            p = pyaudio.PyAudio()
+            stream = p.open(format=pyaudio.paInt16, channels=1, rate=sample_rate, input=True, frames_per_buffer=1024)
 
-    if os.path.exists(f"pdfs/{store_name}.pkl"):
-        with open(f"pdfs/{store_name}.pkl", "rb") as f:
-            VectorStore = pickle.load(f)
-        print("해당 PDF는 저장소에 있습니다!")
-    else:
-        embedding = OpenAIEmbeddings()
-        VectorStore = FAISS.from_texts(chunks, embedding=embedding)
-        with open(f"pdfs/{store_name}.pkl", "wb") as f:
-            pickle.dump(VectorStore, f)
-        print("해당 PDF는 저장소에 없습니다!")
+            # 오디오 데이터 녹음
+            for i in range(0, int(sample_rate / 1024 * duration)):
+                audio_chunk = stream.read(1024)
+                audio_data.append(audio_chunk)
 
-    # 세션 상태 변수 초기화
-    if 'chat_generated' not in st.session_state:
-        st.session_state['chat_generated'] = []
+        with st.spinner("토리가 다 들었어요..."):
+            # 녹음 중지
+            stream.stop_stream()
+            stream.close()
+            p.terminate()
 
-    if 'chat_past' not in st.session_state:
-        st.session_state['chat_past'] = []
+            # 녹음된 오디오를 파일로 저장 (옵션)
+            audio_file = "recorded_audio.wav"
+            with wave.open(audio_file, "wb") as wf:
+                wf.setnchannels(1)
+                wf.setsampwidth(p.get_sample_size(pyaudio.paInt16))
+                wf.setframerate(sample_rate)
+                wf.writeframes(b"".join(audio_data))
+
+            # 수정된 부분: 녹음된 오디오 파일을 읽기 모드로 열기
+            with open("recorded_audio.wav", "rb") as audio_file:
+                transcript = openai.Audio.transcribe("whisper-1", audio_file)
+                ko_response = transcript["text"].encode('utf-16').decode('utf-16')
+                query = ko_response
+
+    if toggle_state is False: 
+        with col2:
+            img = st.image(thumb_style_image_path, caption="AITory")
+            st.empty()
+            st.empty()
 
     if query:
         # 유사한 문서 검색을 통해 적절한 문서 가져오기
@@ -123,8 +146,6 @@ if pdf is not None:
                 max_tokens=1000,
             )
 
-            # stuff
-            # refine = 각 데이터 청크에 대해 초기 프롬프트를 실행하는 것
             chain = load_qa_chain(llm=llm, chain_type="stuff") 
             response = chain.run(input_documents=docs, question=user_question)
 
@@ -134,17 +155,51 @@ if pdf is not None:
             st.session_state.chat_past.append(query)
             st.session_state.chat_generated.append(output)
 
+        if toggle_state:
+                # PDF가 업로드되었다면 PDF 처리를 합니다
+                gpt_prompt = [{
+                        "role" : "system", 
+                        "content" : f"You are a great painter that children like. Choose one character and organize the contents so that a fairy tale book can be created around that character. It is cute and draws pictures that children will like."
+                }]
+                gpt_prompt.append({
+                        "role" : "user",
+                        "content" :f"{pdf.name}, {text}"
+                })
+
+                with st.spinner("토리가 동화를 상상하고 있어요.."):
+                        gpt_response = openai.ChatCompletion.create(
+                            model="gpt-3.5-turbo-16k",
+                            messages=gpt_prompt,
+                            max_tokens=50
+                        )
+
+                pic_prompt = gpt_response["choices"][0]["message"]["content"]
+                dalle_prompt = pic_prompt
+
+                with st.spinner("토리가 동화에 대해서 그려줄게요.."):
+                    dallE_response = openai.Image.create(
+                        prompt=dalle_prompt,
+                        size= "1024x1024",
+                        n=1
+                    )
+                with col2:
+                    img = st.image(dallE_response["data"][0]["url"], caption=pdf.name)
+                    st.empty()
+                    st.empty()
+    
+
         # 대화 기록 및 음성 출력
         with st.spinner("토리가 말하고있어요..."):
             if st.session_state['chat_generated']:
                 for i in range(len(st.session_state['chat_generated']) - 1, -1, -1):
                     message(st.session_state['chat_past'][i], is_user=True, key=str(i) + '_user', avatar_style="thumbs", seed="Aneka")
                     message(st.session_state["chat_generated"][i], key=str(i), avatar_style="thumbs", seed="Felix")
-
-                if AIttsButton:
+                   
+                if tts_button:
                     tts = gTTS(text=output, lang='ko')
                     temp_file = NamedTemporaryFile(delete=False)
                     tts.save(temp_file.name)
                     playsound.playsound(temp_file.name)
                     temp_file.close()
+
         tory_firebase.add_firebase_chat(query, bot_message)
