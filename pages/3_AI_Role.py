@@ -3,7 +3,7 @@ import streamlit as st #  streamlit = Python에서 GUI 생성
 import pickle # 파이썬 객체를 바이너리 파일로 저장하고 불러오는 기능
 import playsound
 import openai
-import side_bar
+from side_bar import run_side_bar
 
 from PyPDF2 import PdfReader # PyPDF2 = streamlit의 PDF 업로드를 읽기 위해 
 from tempfile import NamedTemporaryFile
@@ -27,16 +27,21 @@ from langchain.vectorstores import FAISS # VectorStore = FAISS, Chroma X = Vecto
 # .env 파일로부터 환경 변수 로드
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
+pdf_image_path = "pages/images/download-pdf.gif" 
 
 # 사이드 바 생성
-side_bar.run_side_bar()
+pdf, text, VectorStore = run_side_bar()
 
-# 스트림릿 앱 헤더 설정
-st.header("AI Tory와 역할극 하기! 🕹️")
-st.caption('AI Tory에게 PDF를 학습시키고, 역할을 입력하고 역할놀이를 해봐요! 🫵🏻')
+if pdf is None:
+    # 스트림릿 앱 헤더 설정
+    st.header("AI Tory와 역할놀이 하기! 🕹️")
+    st.caption('AI Tory에게 PDF를 학습시키고, 역할을 입력하고 역할놀이를 해봐요! 🫵🏻')
+    st.info("PDF를 업로드 해주세요...")
+    st.image(pdf_image_path)
 
-# PDF 파일 업로드 및 사용자 질문 입력
-pdf = st.file_uploader(label=' ', type='pdf', key='pdf', help='AI Tory에게 학습할 동화 PDF를 Upload 해주세요') 
+if pdf is not None:
+    st.header(f"AITory와 {pdf.name} 역할놀이 🕹️")
+    st.caption('AI Tory에게 PDF를 학습시키고, 역할을 입력하고 역할놀이를 해봐요! 🫵🏻')
 if pdf is not None:
     user = ""
     ai = ""
@@ -59,9 +64,7 @@ if pdf is not None:
             query = st.text_input("AI토리에게 질문하세요!")
 
             # 음성 듣기 및 전송 버튼 생성
-            _, _, _, AIttsButton_col, submit_button_col = st.columns([2, 1, 1, 1, 1])
-            AIttsButton = AIttsButton_col.button("음성 듣기 🔊")
-            submit_button = submit_button_col.button("전송하기")
+            AIttsButton = st.button("🔊")
             
             # PDF 파일에서 텍스트 추출
             pdf_reader = PdfReader(pdf)
@@ -120,6 +123,7 @@ if pdf is not None:
                 
                 ----------------------------------------------------------------
                 [규칙]
+                - {user}의 {query}에 {ai}의 답변을 최대 3줄로 해라.
                 - {user}의 {query}와 {ai}의 관계를 이해하고 적절한 답변을 해라.
                 - {user}와 {ai}의 대화를 진행하세요.
                 - {user}가 지정한 {ai}에 대한 질문이 아닌 경우 모른다고 대답해.
@@ -155,10 +159,10 @@ if pdf is not None:
                             message(st.session_state["role_generated"][i], key=str(i), avatar_style="thumbs", seed="Felix")
                             message(st.session_state['role_past'][i], is_user=True, key=str(i) + '_user', avatar_style="thumbs", seed="Aneka")
 
-                if AIttsButton:
-                    tts = gTTS(text=output, lang='ko')
-                    temp_file = NamedTemporaryFile(delete=False)
-                    tts.save(temp_file.name)
-                    playsound.playsound(temp_file.name)
-                    temp_file.close()
-                tory_firebase.add_firebase_role(query, bot_message)
+                        if AIttsButton:
+                            tts = gTTS(text=output, lang='ko')
+                            temp_file = NamedTemporaryFile(delete=False)
+                            tts.save(temp_file.name)
+                            playsound.playsound(temp_file.name)
+                            temp_file.close()
+                    tory_firebase.add_firebase_role(query, bot_message)
