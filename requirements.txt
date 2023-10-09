@@ -9,5 +9,9 @@ streamlit-extras
 streamlit-chat
 gTTS
 google-cloud-firestore
+playsound
+openai
+pyaudio
+wave
 # update st
 # 터미널 = pip install -r requirements.txt
