@@ -3,6 +3,9 @@ import streamlit as st #  streamlit = Python에서 GUI 생성
 import pickle # 파이썬 객체를 바이너리 파일로 저장하고 불러오는 기능
 import playsound
 import openai
+import pyaudio
+import wave
+
 from side_bar import run_side_bar
 
 from PyPDF2 import PdfReader # PyPDF2 = streamlit의 PDF 업로드를 읽기 위해 
@@ -31,6 +34,9 @@ pdf_image_path = "pages/images/download-pdf.gif"
 
 # 사이드 바 생성
 pdf, text, VectorStore = run_side_bar()
+sample_rate = 44100  # 오디오 샘플 속도
+duration = 6  # 녹음 시간 (초)
+
 
 if pdf is None:
     # 스트림릿 앱 헤더 설정
@@ -54,6 +60,8 @@ if pdf is not None:
 
         if not user_input or not ai_input:
             st.warning("역할을 입력해주세요.")
+            
+    col1, col2, col3 = st.columns(3)
 
     if user_input and ai_input:  # 역할이 모두 입력된 경우에만 아래 컨테이너 표시
         st.markdown("<hr>", unsafe_allow_html=True)
@@ -61,11 +69,57 @@ if pdf is not None:
         # 스트림릿 컨테이너 생성
         with st.container():
             # 사용자 질문 입력
-            query = st.text_input("AI토리에게 질문하세요!")
+            query = st.text_input("AI토리에게 질문하세요!", placeholder="Send a message")
 
-            # 음성 듣기 및 전송 버튼 생성
-            AIttsButton = st.button("🔊")
-            
+            # 가로로 정렬된 버튼
+            btn_col1, btn_col2, btn_col3 = st.columns(3)
+
+            with btn_col1:
+                whisper_button = st.button("🎙️", help="마이크를 연결해주세요.")
+
+            with btn_col2:
+                tts_button = st.checkbox("🔊",  value=True, help="AI토리가 말해줄게요.")
+
+            with btn_col3:
+                toggle_state = st.checkbox('AI 🎨', value=True, help="AI토리가 그림을 그려줄게요.")
+
+            if whisper_button:
+                with st.spinner("말해주세요! 토리가 듣고있어요..."):
+                    # PyAudio를 사용하여 오디오 스트림 열기
+                    audio_data = []
+                    p = pyaudio.PyAudio()
+                    stream = p.open(format=pyaudio.paInt16, channels=1, rate=sample_rate, input=True, frames_per_buffer=1024)
+
+                    # 오디오 데이터 녹음
+                    for i in range(0, int(sample_rate / 1024 * duration)):
+                        audio_chunk = stream.read(1024)
+                        audio_data.append(audio_chunk)
+
+                with st.spinner("토리가 다 들었어요..."):
+                    # 녹음 중지
+                    stream.stop_stream()
+                    stream.close()
+                    p.terminate()
+
+                    # 녹음된 오디오를 파일로 저장 (옵션)
+                    audio_file = "recorded_audio.wav"
+                    with wave.open(audio_file, "wb") as wf:
+                        wf.setnchannels(1)
+                        wf.setsampwidth(p.get_sample_size(pyaudio.paInt16))
+                        wf.setframerate(sample_rate)
+                        wf.writeframes(b"".join(audio_data))
+
+                    # 수정된 부분: 녹음된 오디오 파일을 읽기 모드로 열기
+                    with open("recorded_audio.wav", "rb") as audio_file:
+                        transcript = openai.Audio.transcribe("whisper-1", audio_file)
+                        ko_response = transcript["text"].encode('utf-16').decode('utf-16')
+                        query = ko_response
+            if toggle_state is False: 
+                with col2:
+                    st.empty()
+                    st.empty()
+                    st.empty()
+
             # PDF 파일에서 텍스트 추출
             pdf_reader = PdfReader(pdf)
             text = ""
@@ -152,6 +206,39 @@ if pdf is not None:
                     st.session_state.role_past.append(query)
                     st.session_state.role_generated.append(output)
 
+
+                if toggle_state:
+                        query = ""
+                        # PDF가 업로드되었다면 PDF 처리를 합니다
+                        gpt_prompt = [{
+                                "role" : "system", 
+                                "content" : f"You are a great painter that children like. Choose one character and organize the contents so that a fairy tale book can be created around that character. It is cute and draws pictures that children will like."
+                        }]
+                        gpt_prompt.append({
+                                "role" : "user",
+                                "content" :f"{pdf.name}, {text}"
+                        })
+
+                        with st.spinner("토리가 동화를 상상하고 있어요.."):
+                                gpt_response = openai.ChatCompletion.create(
+                                    model="gpt-3.5-turbo-16k",
+                                    messages=gpt_prompt,
+                                    max_tokens=50
+                                )
+
+                        pic_prompt = gpt_response["choices"][0]["message"]["content"]
+                        dalle_prompt = pic_prompt
+
+                        with st.spinner("토리가 동화에 대해서 그려줄게요.."):
+                            dallE_response = openai.Image.create(
+                                prompt=dalle_prompt,
+                                size= "1024x1024",
+                                n=1
+                            )
+                        with col2:
+                            img = st.image(dallE_response["data"][0]["url"], caption=pdf.name)
+                            st.empty()
+                            st.empty()
                 # 대화 기록 및 음성 출력
                 with st.spinner("토리가 말하고있어요..."):
                     if st.session_state['role_generated']:
@@ -159,10 +246,12 @@ if pdf is not None:
                             message(st.session_state["role_generated"][i], key=str(i), avatar_style="thumbs", seed="Felix")
                             message(st.session_state['role_past'][i], is_user=True, key=str(i) + '_user', avatar_style="thumbs", seed="Aneka")
 
-                        if AIttsButton:
+                        if tts_button:
+                            query = ""
                             tts = gTTS(text=output, lang='ko')
                             temp_file = NamedTemporaryFile(delete=False)
                             tts.save(temp_file.name)
                             playsound.playsound(temp_file.name)
                             temp_file.close()
+
                     tory_firebase.add_firebase_role(query, bot_message)
