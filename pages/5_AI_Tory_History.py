@@ -45,21 +45,16 @@ chat_df = pd.DataFrame(chat_df_data)
 # RoleHistory 데이터프레임 생성
 role_df = pd.DataFrame(role_df_data)
 
-if option == "대시보드" :
-    # 버튼을 생성합니다.
-    AnalysisButton = st.button("대화 분석 🧑‍💻 AI Tory가 알려줄게요 📚")
-    if AnalysisButton:
-        # "chat_past"
-        if 'chat_generated' not in st.session_state or not st.session_state['chat_generated']:
-                    st.warning("토리와 대화를 먼저 해봐요!")
+st.title("Tory DataBase")
 
+tab1, tab2 = st.tabs(["대화 기록", "역할놀이 기록"])
 
-if option ==  "채팅" :
+with tab1:
     # 스트림릿 애플리케이션 제목 설정
-    st.title('기록된 채팅 데이터')
+    st.subheader('기록된 대화 데이터')
     st.caption('토리와의 대화 기록이에요!')
 
-    if st.button("ChatHistory 데이터 모두 삭제"):
+    if st.button("ChatHistory 데이터 삭제"):
         # Firestore 컬렉션 참조
         chat_collection_ref = db.collection(chat_collection_name)
         
@@ -74,16 +69,11 @@ if option ==  "채팅" :
         st.success("ChatHistory의 모든 데이터가 삭제되었습니다..")
 
     # ChatHistory 데이터를 출력
-    # with st.expander('ChatHistory 데이터', expanded=True):
-    # ChatHistory 테이블 표시
     st.table(chat_df.style.set_table_attributes('class="dataframe"'))
 
-    # ChatHistory 컬렉션의 모든 문서를 삭제하는 버튼 추가
-
-
-if option ==  "역할놀이" :
+with tab2:
     # 스트림릿 애플리케이션 제목 설정
-    st.title('기록된 역할놀이 데이터')
+    st.subheader('기록된 역할놀이 데이터')
     st.caption('토리와의 역할놀이 기록이에요!')
 
     if st.button("RoleHistory 데이터 삭제"):
@@ -104,4 +94,3 @@ if option ==  "역할놀이" :
     # with st.expander('RoleHistory 데이터', expanded=True):
     # RoleHistory 테이블 표시
     st.table(role_df.style.set_table_attributes('class="dataframe"'))
-
