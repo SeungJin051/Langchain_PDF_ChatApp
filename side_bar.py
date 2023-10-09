@@ -10,10 +10,9 @@ import pickle
 def run_side_bar():
      with st.sidebar:
         st.title('🤖 AI Tory')
+        st.info(" AI Tory에게 학습할 동화 PDF를 업로드 해주세요.")
 
-        st.write('AI Tory에게 학습할 동화 PDF를 Upload 해주세요', expanded=True)
-        pdf = st.file_uploader(label=' ', type='pdf', key='pdf') 
-
+        pdf = st.file_uploader(label=' ', type='pdf', key='pdf', help='AI Tory에게 학습할 동화 PDF를 업로드 해주세요.') 
         pdf_reader = None
         text = ""
         VectorStore = None
@@ -50,24 +49,21 @@ def run_side_bar():
                 st.session_state['uploaded_pdf'] = pdf
                 print("해당 PDF는 저장소에 없습니다!")
                 st.success("성공")
+
         return pdf, text, VectorStore
+
+def run_side_tap_home():
+     with st.sidebar:
+        st.title('🤖 AI Tory')
+        st.info("AI Tory에 대해서 알려줄게요.")
 
 def run_side_tap_draw():
      with st.sidebar:
         st.title('🤖 AI Tory')
-        # 드롭다운 생성
-        option = st.selectbox('원하는 항목을 선택하세요.', ('AI 그림 그리기', 'AI 대화 분석'))
-        # 선택한 옵션 출력
-        st.success("성공")
-        
-        return option
+        st.info("AI Tory와의 역할놀이 기록을 저장하고 AI 그림을 그려줘요.")
         
 def run_side_tap_history():
      with st.sidebar:
         st.title('🤖 AI Tory')
-        # 드롭다운 생성
-        option = st.selectbox('원하는 항목을 선택하세요.', ('대시보드', '채팅', '역할놀이',))
-        # 선택한 옵션 출력
-        st.success("성공")
+        st.info("AI Tory의 사용 기록을 저장하고 보여줘요.")
         
-        return option
