@@ -58,9 +58,19 @@ col1, col2, col3 = st.columns(3)
 
 if pdf is not None:
     query = st.text_input("AI토리에게 질문하세요!", placeholder="Send a message")
-    whisper_button = st.button("🎙️", help="마이크를 연결해주세요.")
-    tts_button = st.button("🔊", help="음성으로 듣고싶은 질문을 입력해주세요.")
-    toggle_state = st.checkbox('AI 그림', value=True, help="AI토리가 그림을 그려줄게요.")
+    
+    # 가로로 정렬된 버튼
+    btn_col1, btn_col2, btn_col3 = st.columns(3)
+
+    with btn_col1:
+        whisper_button = st.button("🎙️", help="마이크를 연결해주세요.")
+
+    with btn_col2:
+        tts_button = st.checkbox("🔊",  value=True, help="AI토리가 말해줄게요.")
+
+    with btn_col3:
+        toggle_state = st.checkbox('AI 🎨', value=True, help="AI토리가 그림을 그려줄게요.")
+
 
     if whisper_button:
         with st.spinner("말해주세요! 토리가 듣고있어요..."):
@@ -188,7 +198,7 @@ if pdf is not None:
                     st.empty()
     
 
-        # 대화 기록 및 음성 출력
+        # 대화 기록 및 음성 출력, tts 토글버튼
         with st.spinner("토리가 말하고있어요..."):
             if st.session_state['chat_generated']:
                 for i in range(len(st.session_state['chat_generated']) - 1, -1, -1):
