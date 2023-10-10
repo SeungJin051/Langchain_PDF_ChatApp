@@ -16,7 +16,6 @@ def run_side_bar():
         pdf_reader = None
         text = ""
         VectorStore = None
-
         if pdf is not None:
             pdf_reader = PdfReader(pdf)
             text = ""
@@ -60,7 +59,7 @@ def run_side_tap_home():
 def run_side_tap_draw():
      with st.sidebar:
         st.title('🤖 AI Tory')
-        st.info("AI Tory와의 역할놀이 기록을 저장하고 AI 그림을 그려줘요.")
+        st.info("AI Tory가 학습한 그림을 그려주고, AI 그림도 그려줘요.")
         
 def run_side_tap_history():
      with st.sidebar:
