@@ -13,5 +13,6 @@ playsound
 openai
 pyaudio
 wave
+googletrans==4.0.0-rc1
 # update st
 # 터미널 = pip install -r requirements.txt
