@@ -3,7 +3,7 @@
 langchain==0.0.147
 PyPDF2==3.0.1
 python-dotenv==1.0.0
-streamlit==1.18.1
+streamlit
 faiss-cpu==1.7.4
 streamlit-extras
 streamlit-chat
@@ -14,5 +14,8 @@ openai
 pyaudio
 wave
 googletrans==4.0.0-rc1
+streamlit-faker==0.0.2
+matplotlib
+
 # update st
 # 터미널 = pip install -r requirements.txt
