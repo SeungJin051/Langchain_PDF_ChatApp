@@ -6,8 +6,9 @@ tory_image_path = "pages/images/tory.png"
 run_side_tap_home()
 
 st.title(':blue[AI Tory] 🤖')
-st.subheader('| ChatGPT 기반의 인공지능 동화 스토리봇')
-st.subheader('', divider='gray')
+st.header('| ChatGPT 기반의 인공지능 동화 스토리봇')
+st.header('', divider='gray')
+st.subheader("기술스택")
 python_badge_url = "https://img.shields.io/badge/Python-3776AB.svg?&style=for-the-badge&logo=Python&logoColor=white"
 streamlit_badge_url = "https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white"
 openai_badge_url = "https://img.shields.io/badge/OpenAI-412991.svg?&style=for-the-badge&logo=openai&logoColor=white"
