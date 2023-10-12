@@ -4,3 +4,6 @@
 
 <img width="2279" alt="스크린샷 2023-09-19 오후 10 16 46" src="https://github.com/SeungJin051/Langchain_PDF_ChatApp/assets/83889135/afb22a51-eba6-4db9-adca-3f3dce3b4a7c">
 
+## create
+  - .env
+  - OPENAI_API_KEY= ...
