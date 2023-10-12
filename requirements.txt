@@ -13,7 +13,6 @@ streamlit-faker==0.0.2
 matplotlib
 google-cloud-firestore
 gTTS
-pygobject
 playsound
 pyaudio
 wave
