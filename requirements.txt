@@ -11,7 +11,6 @@ gTTS
 google-cloud-firestore
 playsound
 openai
-portaudio
 pyaudio
 wave
 googletrans==4.0.0-rc1
