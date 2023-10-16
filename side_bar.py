@@ -51,11 +51,6 @@ def run_side_bar():
 
         return pdf, text, VectorStore
 
-def run_side_tap_home():
-     with st.sidebar:
-        st.title('🤖 AI Tory')
-        st.info("AI Tory에 대해서 알려줄게요.")
-
 def run_side_tap_draw():
      with st.sidebar:
         st.title('🤖 AI Tory')
@@ -64,5 +59,5 @@ def run_side_tap_draw():
 def run_side_tap_history():
      with st.sidebar:
         st.title('🤖 AI Tory')
-        st.info("AI Tory의 사용 기록을 저장하고 보여줘요.")
+        st.info("AI Tory의 사용법과 기록을 보여줘요.")
         
