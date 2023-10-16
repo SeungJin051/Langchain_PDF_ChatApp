@@ -82,8 +82,8 @@ if st.session_state.get('text'):
                 "content" : f"""
                             [Information] = {user_input}.
                             You are Beatrix Potter.
-                            You are draw a children's storybook about {query}.
-                            Imagine the details.
+                            You are draw a children's comic draw pic about {query}.
+                            Imagine the details, No need text.
                             You Must be drawing for children's.
                             If say something that's not in the [Information], just draw your own picture of {query}
                             """
