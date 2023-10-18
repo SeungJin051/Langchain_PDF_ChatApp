@@ -171,25 +171,22 @@ with tab1:
                 st.session_state.chat_generated.append(output)
 
             if toggle_state:
-                    # PDF가 업로드되었다면 PDF 처리를 합니다
-                    gpt_prompt = [{
-                        "role" : "system", 
-                        "content" : f"""
-                                    [Information] = {text}
-                                    You are Beatrix Potter.
-                                    You are draw a children's comic about {query}.
-                                    Imagine the details.
-                                    You Must be drawing for children's.
-                                    """
-                    }]
                     # gpt_prompt = [{
-                    #         "role" : "system", 
-                    #         "content" : f"You are a great painter that children like. Choose one character and organize the contents so that a fairy tale book can be created around that character. It is cute and draws pictures that children will like."
+                    #     "role" : "system", 
+                    #     "content" : f"""
+                    #                 You are the Beatrix Potter that draws cute and lovely comic about {text}.
+                    #                 Imagine the details.
+                    #                 You Must be drawing for children's.
+                    #                 """
                     # }]
-                    # gpt_prompt.append({
-                    #         "role" : "user",
-                    #         "content" :f"{pdf.name}, {text}"
-                    # })
+                    gpt_prompt = [{
+                            "role" : "system", 
+                            "content" : f"You are Beatrix Potter. Choose a character and draw a cute, kids-like picture around that character."
+                    }]
+                    gpt_prompt.append({
+                            "role" : "user",
+                            "content" :f"{pdf.name}, {text}"
+                    })
 
                     with st.spinner("토리가 동화를 상상하고 있어요.."):
                             gpt_response = openai.ChatCompletion.create(
@@ -401,12 +398,11 @@ with tab2:
                             gpt_prompt = [{
                                 "role" : "system", 
                                 "content" : f"""
-                                            [Information] = {user_input}.
                                             You are Beatrix Potter.
-                                            You are draw a children's comic draw pic about {query}.
-                                            Imagine the details, No need text.
+                                            You are draw a children's comic draw pic.
+                                            Imagine the details,
                                             You Must be drawing for children's.
-                                            If say something that's not in the [Information], just draw your own picture of {query}
+                                            If say something that's not in the [Information], just draw your own picture of {text}
                                             """
                             }]    
 
