@@ -73,6 +73,7 @@ with tab2:
 
     history1, history2 = st.tabs(["대화 기록", "역할놀이 기록"])
 
+with history1:
     # 스트림릿 애플리케이션 제목 설정
     st.subheader('대화 데이터')
     if st.button("ChatHistory 데이터 삭제"):
