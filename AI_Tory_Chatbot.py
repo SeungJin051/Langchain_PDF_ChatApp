@@ -396,15 +396,13 @@ with tab2:
                             query = ""
                             # PDF가 업로드되었다면 PDF 처리를 합니다
                             gpt_prompt = [{
-                                "role" : "system", 
-                                "content" : f"""
-                                            You are Beatrix Potter.
-                                            You are draw a children's comic draw pic.
-                                            Imagine the details,
-                                            You Must be drawing for children's.
-                                            If say something that's not in the [Information], just draw your own picture of {text}
-                                            """
-                            }]    
+                                    "role" : "system", 
+                                    "content" : f"You are Beatrix Potter. Choose a character and darw a cute and lovely, kids-like picture around that character."
+                            }]
+                            gpt_prompt.append({
+                                    "role" : "user",
+                                    "content" :f"{pdf.name}, {text}"
+                            })
 
                             with st.spinner("토리가 동화를 상상하고 있어요.."):
                                     gpt_response = openai.ChatCompletion.create(
