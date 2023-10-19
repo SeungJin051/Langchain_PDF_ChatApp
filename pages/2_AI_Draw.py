@@ -6,7 +6,7 @@ import playsound
 import pyaudio
 import wave
 
-from side_bar import run_side_tap_draw
+from side_bar import run_side_tap_draw, set_bg_hack
 from dotenv import load_dotenv # OPEN_API_KEY
 
 # -------
@@ -14,14 +14,16 @@ from dotenv import load_dotenv # OPEN_API_KEY
 # .env 파일로부터 환경 변수 로드
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
+main_bg_ext = "pages/images/tory_back.png"
 
+set_bg_hack(main_bg_ext)
 # 사이드 바 생성
 run_side_tap_draw()
 sample_rate = 44100  # 오디오 샘플 속도
 duration = 6  # 녹음 시간 (초)
 
 # 스트림릿 앱 헤더 설정
-st.header("그림 그리기 🎨 AI가 그림을 그려줄게요 🪄")
+st.header("🎨 AI가 그림을 그려줄게요 🪄")
 st.caption('AI가 그림을 그려줄게요.. 🔥')
 
 st.markdown("""
@@ -74,9 +76,9 @@ if whisper_button:
                         ko_response = transcript["text"].encode('utf-16').decode('utf-16')
                         query = ko_response
 if query:
-        conversation = ""
-        conversation += f"{st.session_state['text']}"
-        user_input = conversation
+        # conversation = ""
+        # conversation += f"{st.session_state['text']}"
+        # user_input = conversation
         # PDF가 업로드되었다면 PDF 처리를 합니다
         gpt_prompt = [{
                 "role" : "system", 
