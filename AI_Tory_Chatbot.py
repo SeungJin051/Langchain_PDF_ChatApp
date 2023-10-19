@@ -6,7 +6,7 @@ import openai
 import pyaudio
 import wave
 
-from side_bar import run_side_bar
+from side_bar import run_side_bar, set_bg_hack 
 
 from PyPDF2 import PdfReader # PyPDF2 = streamlit의 PDF 업로드를 읽기 위해 
 from tempfile import NamedTemporaryFile
@@ -25,17 +25,28 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter # langchain.t
 from langchain.embeddings.openai import OpenAIEmbeddings # openAI의 embedding = 계산하고 반환
 from langchain.vectorstores import FAISS # VectorStore = FAISS, Chroma X = VectorStore에서 duckdb.DuckDBPyConnection 접근 불가능
 # -------
-
-# .env 파일로부터 환경 변수 로드
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 thumb_style_image_path = "pages/images/thumb_style.png" 
-pdf_image_path = "pages/images/download-pdf.gif" 
+pdf_image_path = "pages/images/tory_pdf.png" 
+main_bg_ext = "pages/images/tory_back.png"
+
+set_bg_hack(main_bg_ext)
+st.write( """
+        <style>
+        .st-bd {
+            background-color: rgba(255, 255, 255);
+            border-radius: 15px; 
+            padding: 30px; 
+            box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2); 
+        }
+        </style>
+        """,
+    unsafe_allow_html=True)
 # 사이드 바 생성
 pdf, text, VectorStore = run_side_bar()
 sample_rate = 44100  # 오디오 샘플 속도
 duration = 6  # 녹음 시간 (초)
-
 tab1, tab2 = st.tabs(["AI Tory와 대화하기", "AI Tory역할놀이 하기"])
 with tab1:
     if pdf is None:
@@ -72,7 +83,7 @@ with tab1:
             whisper_button = st.button("🎙️", help="마이크를 연결해주세요.")
 
         with btn_col2:
-            tts_button = st.checkbox("🔊",  value=True, help="AI토리가 말해줄게요.")
+            tts_button = st.checkbox("🔊",  value=False, help="AI토리가 말해줄게요.")
 
         with btn_col3:
             toggle_state = st.checkbox('AI 🎨', value=True, help="AI토리가 그림을 그려줄게요.")
@@ -181,7 +192,7 @@ with tab1:
                     # }]
                     gpt_prompt = [{
                             "role" : "system", 
-                            "content" : f"You are Beatrix Potter. Choose a character and draw a cute, kids-like picture around that character."
+                            "content" : f"You are Beatrix Potter. Choose a character in user and draw a cute, kids-like picture around that character."
                     }]
                     gpt_prompt.append({
                             "role" : "user",
@@ -265,7 +276,7 @@ with tab2:
                     whisper_button = st.button("🎙️", help="마이크를 연결해주세요.", key="unique_key_for_whisper_button")
 
                 with btn_col2:
-                    tts_button = st.checkbox("🔊",  value=True, help="AI토리가 말해줄게요.", key="unique_key_for_tts_button")
+                    tts_button = st.checkbox("🔊",  value=False, help="AI토리가 말해줄게요.", key="unique_key_for_tts_button")
 
                 with btn_col3:
                     toggle_state = st.checkbox('AI 🎨', value=True, help="AI토리가 그림을 그려줄게요.", key="unique_key_for_toggle_state")
