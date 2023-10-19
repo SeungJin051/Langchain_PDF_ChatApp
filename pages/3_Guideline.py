@@ -1,7 +1,7 @@
 import streamlit as st
 from google.cloud import firestore
 import pandas as pd
-from side_bar import run_side_tap_history
+from side_bar import run_side_tap_history, set_bg_hack
 import os
 import openai
 
@@ -9,8 +9,10 @@ from dotenv import load_dotenv # OPEN_API_KEY
 tory_image_path = "pages/images/tory.png" 
 
 run_side_tap_history()
+main_bg_ext = "pages/images/tory_back.png"
 
-tab1, tab2 = st.tabs(["AI Tory 가이드라인", "데이터베이스"])
+set_bg_hack(main_bg_ext)
+tab1, tab2 = st.tabs(["AI Tory 가이드라인", "기록"])
 
 with tab1 :
     st.title(':blue[AI Tory] 🤖')
@@ -33,12 +35,12 @@ with tab1 :
     """
     st.write(centered_image_html, unsafe_allow_html=True)
 
-    iframe_url = "https://scribehow.com/embed/How_to_Use_AITory_to_Chat_Draw_and_Send_Files__T-W8Y4MsS4O1fSR_Oo8LvA"
+    iframe_url = "https://scribehow.com/shared/How_to_Use_AI_Assistants_for_Various_Tasks__D2zG6K-bT-yfWuyVieL45A"
     st.markdown(f'<iframe src="{iframe_url}" width="100%" height="640" allowfullscreen frameborder="0"></iframe>', unsafe_allow_html=True)
 
 
 with tab2:
-    st.title("Tory DataBase")
+    st.title("Tory 기록")
 
     # 파이어스토어 클라이언트 생성
     db = firestore.Client.from_service_account_json("pages/ai-tory-firebase-key.json")
@@ -71,11 +73,9 @@ with tab2:
     # RoleHistory 데이터프레임 생성
     role_df = pd.DataFrame(role_df_data)
 
-    history1, history2 = st.tabs(["대화 기록", "역할놀이 기록"])
+    history1, history2 = st.tabs(["대화", "역할놀이"])
 
 with history1:
-    # 스트림릿 애플리케이션 제목 설정
-    st.subheader('대화 데이터')
     if st.button("ChatHistory 데이터 삭제"):
         # Firestore 컬렉션 참조
         chat_collection_ref = db.collection(chat_collection_name)
@@ -94,8 +94,6 @@ with history1:
     st.table(chat_df.style.set_table_attributes('class="dataframe"'))
 
 with history2:
-    # 스트림릿 애플리케이션 제목 설정
-    st.subheader('역할놀이 데이터')
     if st.button("RoleHistory 데이터 삭제"):
         # Firestore 컬렉션 참조
         role_collection_ref = db.collection(role_collection_name)
